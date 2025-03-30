@@ -1,0 +1,23 @@
+[project]
+name = "stock-market-visualization"
+version = "0.1.0"
+description = "Streamlit Application for Stock Market Visualization"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=2.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.9.3,<1.0.0",
+]
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["D", "E", "F", "I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
