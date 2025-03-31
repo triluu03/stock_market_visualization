@@ -8,7 +8,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-STOCK_INFORMATION_COLUMNS = [
+STOCK_SCREENER_COLUMNS = [
     "symbol",
     "name",
     "country",
@@ -16,6 +16,11 @@ STOCK_INFORMATION_COLUMNS = [
     "volume",
     "sector",
     "industry",
+]
+
+ETF_SCREENER_COLUMNS = [
+    "symbol",
+    "name",
 ]
 
 
@@ -37,9 +42,8 @@ def create_mock_database():
 def process_stock_screener_data(df: pd.DataFrame) -> pd.DataFrame:
     """Process stock screener data."""
     df.columns = df.columns.str.lower()
-    return df.rename(columns={"ipo year": "ipo_year"})[
-        STOCK_INFORMATION_COLUMNS
-    ]
+    df = df.dropna(subset=["symbol"])
+    return df.rename(columns={"ipo year": "ipo_year"})[STOCK_SCREENER_COLUMNS]
 
 
 def populate_stock_screener():
@@ -59,8 +63,28 @@ def populate_stock_screener():
     conn.close()
 
 
+def process_etf_screener_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Process ETF screener data."""
+    df.columns = df.columns.str.lower()
+    df = df.dropna(subset=["symbol"])
+    return df[ETF_SCREENER_COLUMNS]
+
+
 def populate_etf_screener():
     """Populate stock screener into the database."""
+    etf_path = join(
+        dirname(realpath(__file__)), "../data/nasdaq_etf_screener.csv"
+    )
+    etf_df = pd.read_csv(etf_path)
+
+    etf_df = process_etf_screener_data(etf_df)
+
+    # Populate into the database
+    conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
+    etf_df.to_sql(
+        name="etf_details", con=conn, if_exists="append", index=False
+    )
+    conn.close()
 
 
 def main():

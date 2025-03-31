@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS stock_details (
     "symbol" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT,
     "country" TEXT,
-    "ipo_year" INTEGER,
+    "ipo_year" YEAR,
     "volume" INTEGER,
     "sector" TEXT,
     "industry" TEXT
