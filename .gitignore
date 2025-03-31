@@ -17,3 +17,4 @@ notebooks/
 
 # Data
 data/
+database/*.db
