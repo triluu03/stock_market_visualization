@@ -71,7 +71,7 @@ def process_etf_screener_data(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def populate_etf_screener():
-    """Populate stock screener into the database."""
+    """Populate ETF screener into the database."""
     etf_path = join(
         dirname(realpath(__file__)), "../data/nasdaq_etf_screener.csv"
     )
