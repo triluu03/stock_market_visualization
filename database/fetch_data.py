@@ -1,0 +1,1 @@
+"""Fetch NASQAD data using yfinance."""
