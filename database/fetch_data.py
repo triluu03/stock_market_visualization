@@ -90,7 +90,8 @@ def fetch_stock_data(symbols: list[str], start_date: str) -> pd.DataFrame:
 def main():
     """Fetch data and populate into the database."""
     logger.info("Reading metadata")
-    with open(join(dirname(realpath(__file__)), "metadata.json"), "r") as f:
+    metadata_path = join(dirname(realpath(__file__)), "metadata.json")
+    with open(metadata_path, "r") as f:
         metadata = json.load(f)
 
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
@@ -100,6 +101,12 @@ def main():
     stock_df = fetch_stock_data(
         stock_symbols, start_date=metadata["last_end_date"]
     )
+
+    logger.info("Updating metadata")
+    with open(metadata_path, "w") as f:
+        json.dump(
+            {"last_end_date": stock_df["date"].max().strftime("%Y-%m-%d")}, f
+        )
 
     logger.info("Writing stock timeseries into the database.")
     stock_df.to_csv(
