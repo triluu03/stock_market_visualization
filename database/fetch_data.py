@@ -1,7 +1,9 @@
 """Fetch NASQAD data using yfinance."""
 
+import json
 import logging
 import sqlite3
+from datetime import datetime
 from os.path import dirname, join, realpath
 
 import pandas as pd
@@ -62,13 +64,15 @@ def fetch_and_process_raw_stock_data(
     return df
 
 
-def fetch_stock_data(symbols: list[str]) -> pd.DataFrame:
+def fetch_stock_data(symbols: list[str], start_date: str) -> pd.DataFrame:
     """Fetch stock data from yfinance.
 
     Parameters
     ----------
     symbols : list[str]
         List of the stock symbols
+    start_date : str
+        Start date from the metadata
 
     Returns
     -------
@@ -76,19 +80,35 @@ def fetch_stock_data(symbols: list[str]) -> pd.DataFrame:
         The stock timeseries as DataFrame
 
     """
-    dfs = map(fetch_and_process_raw_stock_data, symbols)
+    dfs = map(
+        lambda symbol: fetch_and_process_raw_stock_data(symbol, start_date),
+        symbols,
+    )
     return pd.concat(dfs)
 
 
 def main():
     """Fetch data and populate into the database."""
+    logger.info("Reading metadata")
+    with open(join(dirname(realpath(__file__)), "metadata.json"), "r") as f:
+        metadata = json.load(f)
+
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
 
     logger.info("Fetching stock data.")
     stock_symbols = get_stock_symbols(conn)
-    stock_df = fetch_stock_data(stock_symbols)
+    stock_df = fetch_stock_data(
+        stock_symbols, start_date=metadata["last_end_date"]
+    )
 
     logger.info("Writing stock timeseries into the database.")
+    stock_df.to_csv(
+        join(
+            dirname(realpath(__file__)),
+            f"../data/nasdag_stock_{datetime.now()}.csv",
+        ),
+        index=False,
+    )
     stock_df.to_sql(
         name="stock_timeseries", con=conn, if_exists="append", index=False
     )
