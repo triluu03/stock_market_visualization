@@ -9,8 +9,6 @@ import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
-START_DATE = "2005-01-01"
-
 TIMESERIES_MAPPING = {
     "Date": "date",
     "Close": "price_close",
@@ -39,16 +37,20 @@ def get_stock_symbols(conn: sqlite3.Connection) -> list[str]:
     return df["symbol"].unique().tolist()
 
 
-def fetch_and_process_raw_stock_data(symbol: str) -> pd.DataFrame:
+def fetch_and_process_raw_stock_data(
+    symbol: str, start_date: str
+) -> pd.DataFrame:
     """Fetch and process raw stock data.
 
     Parameters
     ----------
     symbol : str
         The ticker symbol.
+    start_date : str
+        Start date from the metadata
 
     """
-    df = yf.download(tickers=symbol, start=START_DATE)
+    df = yf.download(tickers=symbol, start=start_date)
 
     df.columns = df.columns.get_level_values(level=0)
 

@@ -60,7 +60,6 @@ def populate_stock_screener():
         dirname(realpath(__file__)), "../data/nasdaq_stock.csv"
     )
     stock_df = pd.read_csv(timeseries_path)
-    
 
     # Populate into the database
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
