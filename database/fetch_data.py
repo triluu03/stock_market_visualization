@@ -112,7 +112,7 @@ def main():
     stock_df.to_csv(
         join(
             dirname(realpath(__file__)),
-            f"../data/nasdag_stock_{datetime.now()}.csv",
+            f"../data/nasdaq/nasdag_stock_{datetime.now()}.csv",
         ),
         index=False,
     )

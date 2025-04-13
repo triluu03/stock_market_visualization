@@ -2,6 +2,7 @@
 
 import logging
 import sqlite3
+from os import listdir
 from os.path import dirname, join, realpath
 
 import pandas as pd
@@ -46,6 +47,23 @@ def process_stock_screener_data(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns={"ipo year": "ipo_year"})[STOCK_SCREENER_COLUMNS]
 
 
+def fetch_historical_timeseries_data() -> pd.DataFrame:
+    """Fetch historical timeseries data."""
+    timeseries_path = "../data/nasdaq/"
+
+    dfs = []
+    for file in listdir(timeseries_path):
+        if file == ".DS_Store":
+            logger.warning("Detecting `DS_Store` file. Skipping it!")
+            continue
+        dfs.append(pd.read_csv(f"{timeseries_path}{file}"))
+
+    df = pd.concat(dfs)
+    df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
+
+    return df
+
+
 def populate_stock_screener():
     """Populate stock screener into the database."""
     # Reading symbol data
@@ -55,12 +73,8 @@ def populate_stock_screener():
     symbol_df = pd.read_csv(symbol_path)
     symbol_df = process_stock_screener_data(symbol_df)
 
-    # Reading timeseries data
-    timeseries_path = join(
-        dirname(realpath(__file__)), "../data/nasdaq_stock.csv"
-    )
-    stock_df = pd.read_csv(timeseries_path)
-    stock_df["date"] = pd.to_datetime(stock_df["date"], format="%Y-%m-%d")
+    # Reading historical timeseries data
+    stock_df = fetch_historical_timeseries_data()
 
     # Populate into the database
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
