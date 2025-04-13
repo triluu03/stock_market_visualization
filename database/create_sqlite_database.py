@@ -49,7 +49,7 @@ def process_stock_screener_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def fetch_historical_timeseries_data() -> pd.DataFrame:
     """Fetch historical timeseries data."""
-    timeseries_path = "../data/nasdaq/"
+    timeseries_path = join(dirname(realpath(__file__)), "../data/nasdaq/")
 
     dfs = []
     for file in listdir(timeseries_path):
