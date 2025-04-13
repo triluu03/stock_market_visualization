@@ -52,7 +52,7 @@ def fetch_and_process_raw_stock_data(
         Start date from the metadata
 
     """
-    df = yf.download(tickers=symbol, start=start_date)
+    df = yf.download(tickers=symbol, start=start_date, timeout=10)
 
     df.columns = df.columns.get_level_values(level=0)
 
