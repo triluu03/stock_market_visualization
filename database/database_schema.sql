@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS stock_details (
     "symbol" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT,
     "country" TEXT,
-    "ipo_year" YEAR,
+    "ipo_year" INTEGER,
     "volume" INTEGER,
     "sector" TEXT,
     "industry" TEXT
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS etf_details (
 );
 
 CREATE TABLE IF NOT EXISTS stock_timeseries (
-    "symbol" TEXT NOT NULL PRIMARY KEY,
+    "symbol" TEXT REFERENCES stock_details(symbol),
     "date" DATE,
     "price_open" FLOAT,
     "price_close" FLOAT,
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS stock_timeseries (
     "volume" INTEGER
 );
 
-CREATE TABLE IF NOT EXISTS etl_timeseries (
-    "symbol" TEXT NOT NULL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS etf_timeseries (
+    "symbol" TEXT REFERENCES etf_details(symbol),
     "date" DATE,
     "price_open" FLOAT,
     "price_close" FLOAT,

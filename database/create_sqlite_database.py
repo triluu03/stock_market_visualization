@@ -48,17 +48,27 @@ def process_stock_screener_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def populate_stock_screener():
     """Populate stock screener into the database."""
-    stock_path = join(
+    # Reading symbol data
+    symbol_path = join(
         dirname(realpath(__file__)), "../data/nasdaq_stock_screener.csv"
     )
-    stock_df = pd.read_csv(stock_path)
+    symbol_df = pd.read_csv(symbol_path)
+    symbol_df = process_stock_screener_data(symbol_df)
 
-    stock_df = process_stock_screener_data(stock_df)
+    # Reading timeseries data
+    timeseries_path = join(
+        dirname(realpath(__file__)), "../data/nasdaq_stock.csv"
+    )
+    stock_df = pd.read_csv(timeseries_path)
+    
 
     # Populate into the database
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
-    stock_df.to_sql(
+    symbol_df.to_sql(
         name="stock_details", con=conn, if_exists="append", index=False
+    )
+    stock_df.to_sql(
+        name="stock_timeseries", con=conn, if_exists="append", index=False
     )
     conn.close()
 
