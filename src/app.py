@@ -23,19 +23,19 @@ navbar = dbc.NavbarSimple(
         dbc.NavItem(
             dbc.NavLink(
                 [
-                    html.I(className="bi bi-upload me-1"),
-                    "Upload File",
+                    html.I(className="bi bi-graph-up me-1"),
+                    "Performance Timeseries",
                 ],
-                href="/upload",
+                href="/timeseries",
             )
         ),
         dbc.NavItem(
             dbc.NavLink(
                 [
-                    html.I(className="bi bi-info-circle me-1"),
-                    "User Guide",
+                    html.I(className="bi bi-clipboard-data me-1"),
+                    "Market Overview",
                 ],
-                href="/user_guide",
+                href="/",
             )
         ),
         dbc.NavItem(
@@ -48,7 +48,7 @@ navbar = dbc.NavbarSimple(
             )
         ),
     ],
-    brand="Market Overview",
+    brand="Home",
     brand_href="/",
     color="primary",
     dark=True,
