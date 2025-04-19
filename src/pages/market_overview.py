@@ -1,11 +1,11 @@
-"""Home page for search and search options."""
+"""Market overview page."""
 
 from typing import Literal
 
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objs as go
+import plotly.graph_objects as go
 from dash_extensions.enrich import (
     Input,
     Output,
@@ -16,22 +16,11 @@ from dash_extensions.enrich import (
     html,
 )
 
-from utils.database import execute_select_query
+from utils.database import execute_select_query, get_stock_details
 
 dash.register_page(
     __name__, path="/", name="market_overview", title="Market Overview"
 )
-
-
-def get_stock_details() -> pd.DataFrame:
-    """Get gene annotation from the database."""
-    select_result = execute_select_query("SELECT * FROM stock_details")
-    if select_result[0]:
-        stock_details: pd.DataFrame = select_result[1]
-    else:
-        raise ValueError(f"{select_result[1]}")
-
-    return stock_details
 
 
 def get_latest_trade_details() -> pd.DataFrame:
@@ -78,7 +67,7 @@ stock_df = get_market_overview()
 
 
 def layout(refresh: bool = False, **kwargs):
-    """Layout for home page with search functionality.
+    """Create layout for market overview.
 
     Parameters
     ----------

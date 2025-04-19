@@ -68,3 +68,14 @@ def execute_update_query(query: str) -> tuple[bool, str]:
 
     except Exception as error:
         return (False, error)
+
+
+def get_stock_details() -> pd.DataFrame:
+    """Get gene annotation from the database."""
+    select_result = execute_select_query("SELECT * FROM stock_details")
+    if select_result[0]:
+        stock_details: pd.DataFrame = select_result[1]
+    else:
+        raise ValueError(f"{select_result[1]}")
+
+    return stock_details
