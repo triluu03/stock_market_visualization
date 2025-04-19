@@ -20,10 +20,7 @@ from utils.database import execute_select_query, get_stock_details
 START_DATE = "2020-01-01"
 
 dash.register_page(
-    __name__,
-    path="/performance_timeseries",
-    name="performance_timeseries",
-    title="Performance Timeseries",
+    __name__, path="/timeseries", name="timeseries", title="Timeseries"
 )
 
 
