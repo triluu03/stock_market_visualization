@@ -3,7 +3,7 @@
 import json
 import logging
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from os.path import dirname, join, realpath
 
 import pandas as pd
@@ -93,14 +93,16 @@ def main():
     metadata_path = join(dirname(realpath(__file__)), "metadata.json")
     with open(metadata_path, "r") as f:
         metadata = json.load(f)
+        last_end_date = datetime.strptime(
+            metadata["last_end_date"], "%Y-%m-%d"
+        )
+        start_date = (last_end_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
 
     logger.info("Fetching stock data.")
     stock_symbols = get_stock_symbols(conn)
-    stock_df = fetch_stock_data(
-        stock_symbols, start_date=metadata["last_end_date"]
-    )
+    stock_df = fetch_stock_data(stock_symbols, start_date)
 
     logger.info("Updating metadata")
     with open(metadata_path, "w") as f:

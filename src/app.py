@@ -23,6 +23,15 @@ navbar = dbc.NavbarSimple(
         dbc.NavItem(
             dbc.NavLink(
                 [
+                    html.I(className="bi bi-pie-chart me-1"),
+                    "Portfolio Management",
+                ],
+                href="/portfolio",
+            )
+        ),
+        dbc.NavItem(
+            dbc.NavLink(
+                [
                     html.I(className="bi bi-graph-up me-1"),
                     "Performance Timeseries",
                 ],
@@ -41,8 +50,8 @@ navbar = dbc.NavbarSimple(
         dbc.NavItem(
             dbc.NavLink(
                 [
-                    html.I(className="bi bi-arrow-clockwise me-1"),
-                    "Refresh",
+                    html.I(className="bi bi-download me-1"),
+                    "Fetch latest data",
                 ],
                 href="/?refresh=true",
             )
@@ -70,16 +79,9 @@ if __name__ == "__main__":
         action="store_true",
         help="Run in production mode (debug off)",
     )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Run in development mode (debug on)",
-    )
     args = parser.parse_args()
 
     if args.prod:
-        app.run(host="195.148.21.34")
-    elif args.debug:
-        app.run(port=8050, debug=True)
+        app.run(port=8050, debug=False)
     else:
         app.run(port=8050, debug=True)

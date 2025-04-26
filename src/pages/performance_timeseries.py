@@ -51,6 +51,7 @@ def layout(symbol: str | None = None, **kwargs):
                 dcc.Dropdown(
                     options=stock_df["symbol"].unique(),
                     searchable=True,
+                    placeholder="Select a stock...",
                     multi=False,
                     id="selected-stock-symbols",
                 ),
@@ -128,13 +129,13 @@ def layout(symbol: str | None = None, **kwargs):
     prevent_initial_call=True,
 )
 def fetch_timeseries_data(
-    selected_stock_symbol: str,
+    selected_stock_symbol: str | None,
 ) -> list[dict]:
     """Fetch timeseries data from the database.
 
     Parameters
     ----------
-    selected_stock_symbol : str
+    selected_stock_symbol : str | None
         The selected stock symbol.
 
     """
@@ -254,14 +255,13 @@ def create_line_graph(
     Input("timeseries-date-range", "value"),
     Input("stock-details-data", "data"),
     Input("selected-stock-symbols", "value"),
-    prevent_initial_call=True,
 )
 def update_graph(
     data: list[dict],
     plot_type: Literal["candlestick", "line_graph"],
     time_delta: str,
     stock_details_data: dict,
-    selected_stock_symbol: str,
+    selected_stock_symbol: str | None,
 ) -> go.Figure:
     """Update the performance timeseries graph.
 
@@ -275,10 +275,21 @@ def update_graph(
         The date range to filter the data. Should be in pd.Timedelta format.
     stock_details_data : dict
         The stock details data.
-    selected_stock_symbol : str
+    selected_stock_symbol : str | None
         The selected stock symbol.
 
     """
+    if not selected_stock_symbol:
+        return go.Figure().add_annotation(
+            text="Please select at least one stock to show!",
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font=dict(size=14),
+        )
+
     df = pd.DataFrame(data)
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values(by="date")
