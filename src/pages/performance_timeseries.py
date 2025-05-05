@@ -41,7 +41,7 @@ def get_stock_timeseries(symbol: str) -> pd.DataFrame:
     return df
 
 
-def layout(symbol: str | None = None, **kwargs):
+def layout(**kwargs):
     """Create layout for performance timeseries."""
     stock_df = get_stock_details()
 
@@ -55,7 +55,17 @@ def layout(symbol: str | None = None, **kwargs):
                     multi=False,
                     id="selected-stock-symbols",
                 ),
-                className="mt-4 mb-3",
+                className="mt-4 mb-2",
+            ),
+            html.Div(
+                dcc.Dropdown(
+                    options=stock_df["symbol"].unique(),
+                    searchable=True,
+                    placeholder="Compare with...",
+                    multi=False,
+                    id="selected-compare-stock",
+                ),
+                className="mt-2 mb-3",
             ),
             html.Div(
                 [
@@ -99,6 +109,7 @@ def layout(symbol: str | None = None, **kwargs):
 
     return dbc.Container(
         children=[
+            html.Div(id="timeseries-notification"),
             dcc.Store(id="timeseries-data"),
             dcc.Store(
                 id="stock-details-data",
@@ -144,6 +155,48 @@ def fetch_timeseries_data(
 
     df = get_stock_timeseries(selected_stock_symbol)
     return df.to_dict(orient="records")
+
+
+@callback(
+    Output("timeseries-plot-type", "value"),
+    Output("timeseries-plot-type", "options"),
+    Input("selected-compare-stock", "value"),
+    prevent_initial_call=True,
+)
+def disable_candle_stick_option_in_comparing_mode(
+    selected_stock_symbol: str,
+) -> tuple[str, list[dict]]:
+    """Toggle compare stock selection.
+
+    Parameters
+    ----------
+    selected_stock_symbol : str
+        The selected stock symbol.
+
+    """
+    if not selected_stock_symbol:
+        return dash.no_update, [
+            {
+                "label": "Daily Trade",
+                "value": "candlestick",
+            },
+            {
+                "label": "Performance Index",
+                "value": "line_graph",
+            },
+        ]
+    else:
+        return "line_graph", [
+            {
+                "label": "Daily Trade",
+                "value": "candlestick",
+                "disabled": True,
+            },
+            {
+                "label": "Performance Index",
+                "value": "line_graph",
+            },
+        ]
 
 
 def create_candlestick_graph(
@@ -255,6 +308,7 @@ def create_line_graph(
     Input("timeseries-date-range", "value"),
     Input("stock-details-data", "data"),
     Input("selected-stock-symbols", "value"),
+    Input("selected-compare-stock", "value"),
 )
 def update_graph(
     data: list[dict],
@@ -262,7 +316,8 @@ def update_graph(
     time_delta: str,
     stock_details_data: dict,
     selected_stock_symbol: str | None,
-) -> go.Figure:
+    selected_compare_stock: str | None,
+) -> tuple[go.Figure, str]:
     """Update the performance timeseries graph.
 
     Parameters
@@ -277,6 +332,8 @@ def update_graph(
         The stock details data.
     selected_stock_symbol : str | None
         The selected stock symbol.
+    selected_compare_stock : str | None
+        The selected stock for comparison.
 
     """
     if not selected_stock_symbol:

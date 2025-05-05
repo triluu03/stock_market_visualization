@@ -13,22 +13,13 @@ from dash_extensions.enrich import (
 app = DashProxy(
     __name__,
     use_pages=True,
-    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
+    external_stylesheets=[dbc.themes.ZEPHYR, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
 server = app.server
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(
-            dbc.NavLink(
-                [
-                    html.I(className="bi bi-pie-chart me-1"),
-                    "Portfolio Management",
-                ],
-                href="/portfolio",
-            )
-        ),
         dbc.NavItem(
             dbc.NavLink(
                 [
@@ -45,15 +36,6 @@ navbar = dbc.NavbarSimple(
                     "Market Overview",
                 ],
                 href="/",
-            )
-        ),
-        dbc.NavItem(
-            dbc.NavLink(
-                [
-                    html.I(className="bi bi-download me-1"),
-                    "Fetch latest data",
-                ],
-                href="/?refresh=true",
             )
         ),
     ],
