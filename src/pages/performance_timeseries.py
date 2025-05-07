@@ -299,86 +299,65 @@ def create_comparison_graph(
 
     match plot_type:
         case "performance_index_graph":
-            return (
-                px.line(
-                    data_frame=df,
-                    x="date",
-                    y="performance_index",
-                    hover_data=["price_close"],
-                    color="symbol",
-                )
-                .update_layout(
-                    title=dict(
-                        text=(
-                            f"{selected_stock_symbol} vs "
-                            f"{compare_stock_symbol}"
-                        ),
-                        subtitle=dict(
-                            text=(
-                                f"Performance index from "
-                                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
-                                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
-                            )
-                        ),
-                    ),
-                    xaxis_title="Date",
-                    yaxis_title="Performance index",
-                    yaxis_tickformat=".0%",
-                    margin=dict(t=100),
-                )
-                .update_traces(
-                    hovertemplate=(
-                        "Date: %{x}"
-                        "<br>Performance: %{y:.2%}"
-                        "<br>Price: %{customdata[0]:,.2f}"
-                        "<extra></extra>"
-                    ),
-                    line=dict(width=3),
-                )
-                .update_xaxes(
-                    rangeslider_visible=True,
-                )
+            y = "performance_index"
+            hover_data = "price_close"
+            subtitle = (
+                f"Performance index from "
+                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
+                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
+            )
+            yaxis_title = "Performance index"
+            yaxis_tickformat = ".0%"
+            hover_template = (
+                "Date: %{x}"
+                "<br>Performance: %{y:.2%}"
+                "<br>Price: %{customdata[0]:,.2f}"
+                "<extra></extra>"
             )
         case "daily_price_graph":
-            return (
-                px.line(
-                    data_frame=df,
-                    x="date",
-                    y="price_close",
-                    hover_data=["performance_index"],
-                    color="symbol",
-                )
-                .update_layout(
-                    title=dict(
-                        text=(
-                            f"{selected_stock_symbol} vs "
-                            f"{compare_stock_symbol}"
-                        ),
-                        subtitle=dict(
-                            text=(
-                                f"Close price from "
-                                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
-                                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
-                            )
-                        ),
-                    ),
-                    xaxis_title="Date",
-                    yaxis_title="Price",
-                    margin=dict(t=100),
-                )
-                .update_traces(
-                    hovertemplate=(
-                        "Date: %{x}"
-                        "<br>Price: %{y:,.2f}"
-                        "<br>Performance: %{customdata[0]:.2%}"
-                        "<extra></extra>"
-                    ),
-                    line=dict(width=3),
-                )
-                .update_xaxes(
-                    rangeslider_visible=True,
-                )
+            y = "price_close"
+            hover_data = "performance_index"
+            subtitle = (
+                f"Close price from "
+                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
+                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
             )
+            yaxis_title = "Price"
+            yaxis_tickformat = ".2f"
+            hover_template = (
+                "Date: %{x}"
+                "<br>Price: %{y:,.2f}"
+                "<br>Performance: %{customdata[0]:.2%}"
+                "<extra></extra>"
+            )
+
+    return (
+        px.line(
+            data_frame=df,
+            x="date",
+            y=y,
+            hover_data=[hover_data],
+            color="symbol",
+            color_discrete_map={
+                selected_stock_symbol: "#00246B",
+                compare_stock_symbol: "#408EC6",
+            },
+        )
+        .update_layout(
+            title=dict(
+                text=(
+                    f"{selected_stock_symbol} vs " f"{compare_stock_symbol}"
+                ),
+                subtitle=dict(text=subtitle),
+            ),
+            xaxis_title="Date",
+            yaxis_title=yaxis_title,
+            yaxis_tickformat=yaxis_tickformat,
+            margin=dict(t=100),
+        )
+        .update_traces(hovertemplate=hover_template, line=dict(width=3))
+        .update_xaxes(rangeslider_visible=True)
+    )
 
 
 def create_daily_trade_graph_graph(
