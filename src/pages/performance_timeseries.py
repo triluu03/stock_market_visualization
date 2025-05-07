@@ -72,17 +72,44 @@ def layout(**kwargs):
                     dbc.RadioItems(
                         options=[
                             {
-                                "label": "Daily Trade",
-                                "value": "candlestick",
+                                "label": [
+                                    "Daily Trade ",
+                                    html.I(
+                                        className="bi bi-info-circle-fill",
+                                        id="daily-trade-plot-info",
+                                    ),
+                                ],
+                                "value": "daily_trade_graph",
                             },
                             {
                                 "label": "Performance Index",
-                                "value": "line_graph",
+                                "value": "performance_index_graph",
+                            },
+                            {
+                                "label": [
+                                    "Daily Price ",
+                                    html.I(
+                                        className="bi bi-info-circle-fill",
+                                        id="daily-price-plot-info",
+                                    ),
+                                ],
+                                "value": "daily_price_graph",
+                                "disabled": True,
                             },
                         ],
-                        value="candlestick",
+                        value="daily_trade_graph",
                         id="timeseries-plot-type",
                         inline=True,
+                    ),
+                    dbc.Tooltip(
+                        "Daily Trade plot is not available when doing the "
+                        "comparison between two stocks!",
+                        target="daily-trade-plot-info",
+                    ),
+                    dbc.Tooltip(
+                        "Daily Price plot is only available when doing the "
+                        "comparison between two stocks!",
+                        target="daily-price-plot-info",
                     ),
                 ],
                 className="mb-3",
@@ -177,32 +204,187 @@ def disable_candle_stick_option_in_comparing_mode(
     if not selected_stock_symbol:
         return dash.no_update, [
             {
-                "label": "Daily Trade",
-                "value": "candlestick",
+                "label": [
+                    "Daily Trade ",
+                    html.I(
+                        className="bi bi-info-circle-fill",
+                        id="daily-trade-plot-info",
+                    ),
+                ],
+                "value": "daily_trade_graph",
             },
             {
                 "label": "Performance Index",
-                "value": "line_graph",
+                "value": "performance_index_graph",
+            },
+            {
+                "label": [
+                    "Daily Price",
+                    html.I(
+                        className="bi bi-info-circle-fill",
+                        id="daily-price-plot-info",
+                    ),
+                ],
+                "value": "daily_price_graph",
+                "disabled": True,
             },
         ]
     else:
-        return "line_graph", [
+        return "performance_index_graph", [
             {
-                "label": "Daily Trade",
-                "value": "candlestick",
+                "label": [
+                    "Daily Trade ",
+                    html.I(
+                        className="bi bi-info-circle-fill",
+                        id="daily-trade-plot-info",
+                    ),
+                ],
+                "value": "daily_trade_graph",
                 "disabled": True,
             },
             {
                 "label": "Performance Index",
-                "value": "line_graph",
+                "value": "performance_index_graph",
+            },
+            {
+                "label": [
+                    "Daily Price ",
+                    html.I(
+                        className="bi bi-info-circle-fill",
+                        id="daily-price-plot-info",
+                    ),
+                ],
+                "value": "daily_price_graph",
             },
         ]
 
 
-def create_candlestick_graph(
+def create_comparison_graph(
+    selected_stock_df: pd.DataFrame,
+    selected_stock_symbol: str,
+    compare_stock_df: pd.DataFrame,
+    compare_stock_symbol: str,
+    plot_type: Literal["performance_index_graph", "daily_price_graph"],
+) -> go.Figure:
+    """Create the comparison graph.
+
+    Parameters
+    ----------
+    selected_stock_df : pd.DataFrame
+        The dataframe of the selected stock.
+    selected_stock_symbol : str
+        The symbol of the selected stock.
+    compare_stock_df : pd.DataFrame
+        The dataframe of the comparison stock.
+    compare_stock_symbol : str
+        The symbol of the comparison stock.
+    plot_type : Literal["performance_index_graph", "daily_price_graph"]
+        The type of the plot to show
+
+    """
+    df = pd.concat(
+        [
+            selected_stock_df.assign(
+                performance_index=selected_stock_df["price_close"]
+                / selected_stock_df.iloc[0]["price_close"]
+                - 1
+            ),
+            compare_stock_df.assign(
+                performance_index=compare_stock_df["price_close"]
+                / compare_stock_df.iloc[0]["price_close"]
+                - 1
+            ),
+        ]
+    )
+
+    match plot_type:
+        case "performance_index_graph":
+            return (
+                px.line(
+                    data_frame=df,
+                    x="date",
+                    y="performance_index",
+                    hover_data=["price_close"],
+                    color="symbol",
+                )
+                .update_layout(
+                    title=dict(
+                        text=(
+                            f"{selected_stock_symbol} vs "
+                            f"{compare_stock_symbol}"
+                        ),
+                        subtitle=dict(
+                            text=(
+                                f"Performance index from "
+                                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
+                                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
+                            )
+                        ),
+                    ),
+                    xaxis_title="Date",
+                    yaxis_title="Performance index",
+                    yaxis_tickformat=".0%",
+                    margin=dict(t=100),
+                )
+                .update_traces(
+                    hovertemplate=(
+                        "Date: %{x}"
+                        "<br>Performance: %{y:.2%}"
+                        "<br>Price: %{customdata[0]:,.2f}"
+                        "<extra></extra>"
+                    ),
+                    line=dict(width=3),
+                )
+                .update_xaxes(
+                    rangeslider_visible=True,
+                )
+            )
+        case "daily_price_graph":
+            return (
+                px.line(
+                    data_frame=df,
+                    x="date",
+                    y="price_close",
+                    hover_data=["performance_index"],
+                    color="symbol",
+                )
+                .update_layout(
+                    title=dict(
+                        text=(
+                            f"{selected_stock_symbol} vs "
+                            f"{compare_stock_symbol}"
+                        ),
+                        subtitle=dict(
+                            text=(
+                                f"Close price from "
+                                f"{df.iloc[0]['date'].strftime('%Y-%m-%d')} to"
+                                f" {df.iloc[-1]['date'].strftime('%Y-%m-%d')}"
+                            )
+                        ),
+                    ),
+                    xaxis_title="Date",
+                    yaxis_title="Price",
+                    margin=dict(t=100),
+                )
+                .update_traces(
+                    hovertemplate=(
+                        "Date: %{x}"
+                        "<br>Price: %{y:,.2f}"
+                        "<br>Performance: %{customdata[0]:.2%}"
+                        "<extra></extra>"
+                    ),
+                    line=dict(width=3),
+                )
+                .update_xaxes(
+                    rangeslider_visible=True,
+                )
+            )
+
+
+def create_daily_trade_graph_graph(
     df: pd.DataFrame, selected_stock_symbol: str, stock_name: str
 ) -> go.Figure:
-    """Create candlestick graph.
+    """Create daily_trade_graph graph.
 
     Parameters
     ----------
@@ -238,7 +420,7 @@ def create_candlestick_graph(
     )
 
 
-def create_line_graph(
+def create_performance_index_graph(
     df: pd.DataFrame, selected_stock_symbol: str, stock_name: str
 ) -> go.Figure:
     """Create line graph.
@@ -275,7 +457,7 @@ def create_line_graph(
                 ),
             ),
             xaxis_title="Date",
-            yaxis_title="Price",
+            yaxis_title="Performance index",
             yaxis_tickformat=".0%",
             margin=dict(t=100),
         )
@@ -301,6 +483,28 @@ def create_line_graph(
     )
 
 
+def filter_date(df: pd.DataFrame, time_delta: str) -> pd.DataFrame:
+    """Filter dates of the data.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A dataframe with a date column.
+    time_delta : str
+        The valid input of pd.Timedelta function or "ytd".
+
+    """
+    if time_delta == "ytd":
+        df = df.loc[
+            df["date"]
+            >= pd.Timestamp(year=df["date"].max().year, month=1, day=1)
+        ]
+    else:
+        df = df.loc[df["date"] >= df["date"].max() - pd.Timedelta(time_delta)]
+
+    return df
+
+
 @callback(
     Output("performance-timeseries-graph", "figure"),
     Input("timeseries-data", "data"),
@@ -312,7 +516,7 @@ def create_line_graph(
 )
 def update_graph(
     data: list[dict],
-    plot_type: Literal["candlestick", "line_graph"],
+    plot_type: Literal["daily_trade_graph", "performance_index_graph"],
     time_delta: str,
     stock_details_data: dict,
     selected_stock_symbol: str | None,
@@ -324,7 +528,7 @@ def update_graph(
     ----------
     data : list[dict]
         The fetched data from the database.
-    plot_type : Literal["candlestick", "line_graph"]
+    plot_type : Literal["daily_trade_graph", "performance_index_graph"]
         The type of plot to display.
     time_delta : str
         The date range to filter the data. Should be in pd.Timedelta format.
@@ -338,7 +542,11 @@ def update_graph(
     """
     if not selected_stock_symbol:
         return go.Figure().add_annotation(
-            text="Please select at least one stock to show!",
+            text=(
+                "Please select the first stock for comparison!"
+                if selected_compare_stock
+                else "Please select at least one stock to show!"
+            ),
             xref="paper",
             yref="paper",
             x=0.5,
@@ -350,27 +558,34 @@ def update_graph(
     df = pd.DataFrame(data)
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values(by="date")
+    df = filter_date(df, time_delta)
 
-    if time_delta == "ytd":
-        df = df.loc[
-            df["date"]
-            >= pd.Timestamp(year=df["date"].max().year, month=1, day=1)
-        ]
+    if selected_compare_stock:
+        compare_df = get_stock_timeseries(selected_compare_stock)
+        compare_df["date"] = pd.to_datetime(compare_df["date"])
+        compare_df = compare_df.sort_values(by="date")
+        compare_df = filter_date(compare_df, time_delta)
+
+        fig = create_comparison_graph(
+            selected_stock_df=df,
+            selected_stock_symbol=selected_stock_symbol,
+            compare_stock_df=compare_df,
+            compare_stock_symbol=selected_compare_stock,
+            plot_type=plot_type,
+        )
     else:
-        df = df.loc[df["date"] >= df["date"].max() - pd.Timedelta(time_delta)]
-
-    match plot_type:
-        case "candlestick":
-            fig = create_candlestick_graph(
-                df,
-                selected_stock_symbol,
-                stock_details_data[selected_stock_symbol]["name"],
-            )
-        case "line_graph":
-            fig = create_line_graph(
-                df,
-                selected_stock_symbol,
-                stock_details_data[selected_stock_symbol]["name"],
-            )
+        match plot_type:
+            case "daily_trade_graph":
+                fig = create_daily_trade_graph_graph(
+                    df,
+                    selected_stock_symbol,
+                    stock_details_data[selected_stock_symbol]["name"],
+                )
+            case "performance_index_graph":
+                fig = create_performance_index_graph(
+                    df,
+                    selected_stock_symbol,
+                    stock_details_data[selected_stock_symbol]["name"],
+                )
 
     return fig

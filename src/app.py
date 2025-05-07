@@ -39,7 +39,7 @@ navbar = dbc.NavbarSimple(
             )
         ),
     ],
-    brand="Home",
+    brand="NASDAQ Visualization",
     brand_href="/",
     color="primary",
     dark=True,
