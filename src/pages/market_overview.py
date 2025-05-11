@@ -249,12 +249,3 @@ def update_treemap(
     )
 
     return fig
-
-
-# @callback(
-#     Input("treemap-market-overview", "clickData"), prevent_initial_call=True
-# )
-# def redirect_on_click(click_data):
-#     """Redirect to candle stick plot."""
-#     if click_data:
-#         print(click_data)
