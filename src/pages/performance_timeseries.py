@@ -219,7 +219,7 @@ def disable_candle_stick_option_in_comparing_mode(
             },
             {
                 "label": [
-                    "Daily Price",
+                    "Daily Price ",
                     html.I(
                         className="bi bi-info-circle-fill",
                         id="daily-price-plot-info",

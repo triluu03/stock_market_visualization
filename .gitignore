@@ -17,4 +17,4 @@ notebooks/
 
 # Data
 data/
-database/*.db
+database/mock.db

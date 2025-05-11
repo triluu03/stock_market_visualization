@@ -1,11 +1,15 @@
 """Utilities for database operations."""
 
+import os
 import sqlite3
 from os.path import dirname, join, realpath
 
 import pandas as pd
 
-DATABASE_PATH = join(dirname(realpath(__file__)), "../../database/mock.db")
+TARGET_DATABASE = os.environ.get("TARGET_DATABASE", "mock.db")
+DATABASE_PATH = join(
+    dirname(realpath(__file__)), f"../../database/{TARGET_DATABASE}"
+)
 
 
 def execute_select_query(query: str) -> tuple[bool, pd.DataFrame | str]:

@@ -1,6 +1,7 @@
 """Main application view."""
 
 import argparse
+import os
 
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
@@ -53,6 +54,8 @@ app.layout = dmc.MantineProvider(
 )
 
 if __name__ == "__main__":
+    os.environ["STOCK_DATABASE"] = "mock.db"
+
     parser = argparse.ArgumentParser(
         description="Run Dash app in production or development mode"
     )
