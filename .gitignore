@@ -16,5 +16,5 @@ wheels/
 notebooks/
 
 # Data
-data/
+data/nasdaq/
 database/mock.db

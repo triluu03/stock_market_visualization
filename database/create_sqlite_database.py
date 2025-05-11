@@ -87,30 +87,6 @@ def populate_stock_screener():
     conn.close()
 
 
-def process_etf_screener_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Process ETF screener data."""
-    df.columns = df.columns.str.lower()
-    df = df.dropna(subset=["symbol"])
-    return df[ETF_SCREENER_COLUMNS]
-
-
-def populate_etf_screener():
-    """Populate ETF screener into the database."""
-    etf_path = join(
-        dirname(realpath(__file__)), "../data/nasdaq_etf_screener.csv"
-    )
-    etf_df = pd.read_csv(etf_path)
-
-    etf_df = process_etf_screener_data(etf_df)
-
-    # Populate into the database
-    conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
-    etf_df.to_sql(
-        name="etf_details", con=conn, if_exists="append", index=False
-    )
-    conn.close()
-
-
 def main():
     """Create mock database and populate data."""
     logger.info("Creating the mock database in sqlite3.")
@@ -118,9 +94,6 @@ def main():
 
     logger.info("Populating the stock screener into the database.")
     populate_stock_screener()
-
-    logger.info("Populating the ETF screener into the database.")
-    populate_etf_screener()
 
 
 if __name__ == "__main__":
