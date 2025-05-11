@@ -2,6 +2,7 @@
 
 import logging
 import sqlite3
+from argparse import ArgumentParser
 from os import listdir
 from os.path import dirname, join, realpath
 
@@ -64,8 +65,16 @@ def fetch_historical_timeseries_data() -> pd.DataFrame:
     return df
 
 
-def populate_stock_screener():
-    """Populate stock screener into the database."""
+def populate_stock_screener(populate_timeseries: bool = False):
+    """Populate stock screener into the database.
+
+    Parameters
+    ----------
+    populate_timeseries : bool, default False
+        Whether to populate the timeseries of daily trades into
+        the mock database.
+
+    """
     # Reading symbol data
     symbol_path = join(
         dirname(realpath(__file__)), "../data/nasdaq_stock_screener.csv"
@@ -73,28 +82,49 @@ def populate_stock_screener():
     symbol_df = pd.read_csv(symbol_path)
     symbol_df = process_stock_screener_data(symbol_df)
 
-    # Reading historical timeseries data
-    stock_df = fetch_historical_timeseries_data()
-
     # Populate into the database
     conn = sqlite3.connect(join(dirname(realpath(__file__)), "mock.db"))
     symbol_df.to_sql(
         name="stock_details", con=conn, if_exists="append", index=False
     )
-    stock_df.to_sql(
-        name="stock_timeseries", con=conn, if_exists="append", index=False
-    )
+
+    if populate_timeseries:
+        stock_df = fetch_historical_timeseries_data()
+        stock_df.to_sql(
+            name="stock_timeseries", con=conn, if_exists="append", index=False
+        )
+
     conn.close()
 
 
-def main():
-    """Create mock database and populate data."""
+def main(populate_timeseries: bool = False):
+    """Create mock database and populate data.
+
+    Parameters
+    ----------
+    populate_timeseries : bool, default False
+        Whether to populate the timeseries of daily trades into
+        the mock database.
+
+    """
     logger.info("Creating the mock database in sqlite3.")
     create_mock_database()
 
     logger.info("Populating the stock screener into the database.")
-    populate_stock_screener()
+    populate_stock_screener(populate_timeseries)
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--populate-timeseries",
+        action="store_true",
+        help=(
+            "Whether to populate the timeseries data into the database. "
+            "By default, only the stock screener data is populated into "
+            "the mock database."
+        ),
+    )
+    args = parser.parse_args()
+
+    main(populate_timeseries=args.populate_timeseries)
